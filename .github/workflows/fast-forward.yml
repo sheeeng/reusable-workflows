@@ -87,5 +87,7 @@ jobs:
           echo "Fast forward commits from ***${HEAD_REF}*** to ***${BASE_REF}*** \
             >> pullRequestComment.md
 
+          cat --show-all pullRequestComment.md
+
           gh pr comment ${ISSUE_NUMBER} \
             --body-file pullRequestComment.md
