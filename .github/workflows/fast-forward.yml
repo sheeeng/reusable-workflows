@@ -8,9 +8,9 @@ on:
       app_id:
         required: true
         type: string
+    secrets:
       private_key:
         required: true
-        type: string
 
 permissions:
   actions: write
