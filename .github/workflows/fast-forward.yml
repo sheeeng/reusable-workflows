@@ -60,8 +60,8 @@ jobs:
         id: fast-forward
         continue-on-error: true
         env:
-          BASE_REF: ${{ steps.getPullRequest.outputs.BASE_REF }}
-          HEAD_REF: ${{ steps.getPullRequest.outputs.HEAD_REF }}
+          BASE_REF: ${{ steps.get-pull-request.outputs.BASE_REF }}
+          HEAD_REF: ${{ steps.get-pull-request.outputs.HEAD_REF }}
         run: |
           git checkout ${BASE_REF} \
             && git merge origin/${HEAD_REF} --ff-only \
