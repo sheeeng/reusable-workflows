@@ -31,7 +31,7 @@ jobs:
         uses: actions/create-github-app-token@7bfa3a4717ef143a604ee0a99d859b8886a96d00 # v1
         id: app-token
         with:
-            app-id: ${{ env.FAST_FORWARD_PULL_REQUESTS_APP_ID }}
+          app-id: ${{ env.FAST_FORWARD_PULL_REQUESTS_APP_ID }}
           private-key: ${{ env.FAST_FORWARD_PULL_REQUESTS_PRIVATE_KEY }}
 
       - name: Checkout
@@ -55,3 +55,15 @@ jobs:
 
           echo "HEAD_REF=$(jq --raw-output '.head.ref' pullRequest.json)" \
             >> "${GITHUB_OUTPUT}"
+      - name: Comment on Pull Request
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          BASE_REF: ${{ steps.get-pull-request.outputs.BASE_REF }}
+          HEAD_REF: ${{ steps.get-pull-request.outputs.HEAD_REF }}
+        run: |
+          echo "Fast forward commits??? from ***${HEAD_REF}*** to ***${BASE_REF}***??? \
+            >> pullRequestComment.md
+
+          gh pr comment ${ISSUE_NUMBER} \
+            --body-file pullRequestComment.md
