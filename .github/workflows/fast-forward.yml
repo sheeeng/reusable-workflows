@@ -24,7 +24,7 @@ jobs:
         shell: bash
     env:
       FAST_FORWARD_PULL_REQUESTS_APP_ID: ${{ inputs.app_id }}
-      FAST_FORWARD_PULL_REQUESTS_PRIVATE_KEY: ${{ inputs.private_key }}
+      FAST_FORWARD_PULL_REQUESTS_PRIVATE_KEY: ${{ secrets.private_key }}
     runs-on: ubuntu-latest
     steps:
       - name: Get App Token
