@@ -1,10 +1,6 @@
 on:
   workflow_call:
     inputs:
-      workflow_name:
-        required: false
-        type: string
-        default: "fast-forward"
       app_id:
         required: true
         type: string
