@@ -18,7 +18,8 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  fast_forward_job:
+    name: Fast Forward
     defaults:
       run:
         shell: bash
