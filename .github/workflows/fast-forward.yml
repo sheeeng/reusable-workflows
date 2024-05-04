@@ -85,8 +85,8 @@ jobs:
           BASE_REF: ${{ steps.get-pull-request.outputs.BASE_REF }}
           HEAD_REF: ${{ steps.get-pull-request.outputs.HEAD_REF }}
         run: |
-          echo "Fast forward commits from ***${HEAD_REF}*** to ***${BASE_REF}*** \
-            >> pullRequestComment.md
+          echo "Fast forward commits from ***${HEAD_REF}*** to ***${BASE_REF}***" \
+          >> pullRequestComment.md
 
           cat --show-all pullRequestComment.md
 
