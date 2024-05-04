@@ -55,6 +55,28 @@ jobs:
 
           echo "HEAD_REF=$(jq --raw-output '.head.ref' pullRequest.json)" \
             >> "${GITHUB_OUTPUT}"
+
+      - name: Fast Forward
+        id: fast-forward
+        continue-on-error: true
+        env:
+          BASE_REF: ${{ steps.getPullRequest.outputs.BASE_REF }}
+          HEAD_REF: ${{ steps.getPullRequest.outputs.HEAD_REF }}
+        run: |
+          git checkout ${BASE_REF} \
+            && git merge origin/${HEAD_REF} --ff-only \
+            && git push origin ${BASE_REF}
+
+      - name: Write Success Comment
+        if: ${{ steps.fast-forward.outcome == 'success' }}
+        run: |
+          echo "**_Success!_** 💚" > pullRequestComment.md
+
+      - name: Write Failure Comment
+        if: ${{ steps.fast-forward.outcome == 'failure' }}
+        run: |
+          echo "**_Failure!_** 💥" > pullRequestComment.md
+
       - name: Comment on Pull Request
         env:
           GITHUB_TOKEN: ${{ github.token }}
