@@ -8,10 +8,11 @@ on:
       private_key:
         required: true
 
-permissions:
-  actions: write
-  pull-requests: write
-  contents: write
+# This workflow requires these permissions in the caller workflow.
+# permissions:
+#   actions: write
+#   pull-requests: write
+#   contents: write
 
 jobs:
   fast_forward_job:
