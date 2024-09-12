@@ -80,7 +80,7 @@ jobs:
               --json title -q ".[0].title")
             PR_TITLE=$(echo "$LAST_PR_TITLE" | sed "s/$CURRENT_BRANCH/$TARGET_BRANCH/")
           fi
-          echo "pr_title=$PR_TITLE" >> "$GITHUB_OUTPUT"
+          echo "pull_request_title=$PR_TITLE" >> "$GITHUB_OUTPUT"
 
       - name: Fetch Changes
         env:
@@ -126,6 +126,7 @@ jobs:
           EXISTING_PULL_REQUEST_NUMBER: ${{ steps.check-pull-request-exists.outputs.existing_pull_request_number }}
           PULL_REQUEST_TITLE: ${{ steps.generate-pull-request-title.outputs.pull_request_title }}
         run: |
+          set -x
           if [[ -n "${EXISTING_PULL_REQUEST_NUMBER}" ]]; then
             # Update the body of existing pull request with the new changelog.
             gh pr edit ${EXISTING_PULL_REQUEST_NUMBER} \
