@@ -69,8 +69,9 @@ jobs:
           TARGET_BRANCH: ${{ steps.target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
+          set -x
           SEARCH_PR_TITLE="Fast-forward version $LAST_COMMIT_DATE"
-          if [[ "$CURRENT_BRANCH" == "lab" ]]; then
+          if [[ "$CURRENT_BRANCH" == 'main' ]]; then
             COUNT=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base $TARGET_BRANCH | wc -l)
             ((COUNT+=1))
             PR_TITLE="Fast-forward \`$TARGET_BRANCH\` to version \`$LAST_COMMIT_DATE-$COUNT\` 🚀"
@@ -114,7 +115,8 @@ jobs:
           CURRENT_BRANCH: ${{ github.ref_name }}
           TARGET_BRANCH: ${{ steps.target-branch.outputs.target_branch }}
         run: |
-          PR_EXISTING=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number -q ".[0].number")
+          set -x
+          PR_EXISTING=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number --jq ".[0].number")
           echo "PR_EXISTING=$PR_EXISTING" >> "$GITHUB_OUTPUT"
 
       - name: Update or Create PR
@@ -125,6 +127,7 @@ jobs:
           PR_EXISTING: ${{ steps.check-pr.outputs.PR_EXISTING }}
           PR_TITLE: ${{ steps.generate-pr-title.outputs.pr_title }}
         run: |
+          set -x
           if [[ -n "$PR_EXISTING" ]]; then
             # Update the existing PR's body with the new changelog
             gh pr edit $PR_EXISTING \
