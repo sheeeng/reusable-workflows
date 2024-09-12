@@ -44,6 +44,8 @@ jobs:
         env:
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
+          # if [[ "$CURRENT_BRANCH" == "main" ]]; then
+          #   echo "target_branch=dev" >> "$GITHUB_OUTPUT"
           if [[ "$CURRENT_BRANCH" == "lab" ]]; then
             echo "target_branch=dev" >> "$GITHUB_OUTPUT"
           elif [[ "$CURRENT_BRANCH" == "dev" ]]; then
@@ -51,7 +53,7 @@ jobs:
           elif [[ "$CURRENT_BRANCH" == "test" ]]; then
             echo "target_branch=prod" >> "$GITHUB_OUTPUT"
           else
-            echo "Error: No valid target branch for $CURRENT_BRANCH"
+            echo "Error: Current branch \`${CURRENT_BRANCH}\` is not supported." >&2
             exit 1
           fi
 
