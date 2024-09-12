@@ -69,6 +69,7 @@ jobs:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
+          set -x
           SEARCH_PR_TITLE="Fast-forward version ${LAST_COMMIT_DATE}"
           if [[ "${CURRENT_BRANCH}" == "lab" ]]; then
             COUNT=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base ${TARGET_BRANCH} | wc -l)
