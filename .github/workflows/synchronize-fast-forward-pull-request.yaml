@@ -44,9 +44,9 @@ jobs:
         env:
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
-          # if [[ "$CURRENT_BRANCH" == "main" ]]; then
-          #   echo "target_branch=dev" >> "$GITHUB_OUTPUT"
-          if [[ "$CURRENT_BRANCH" == "lab" ]]; then
+          if [[ "$CURRENT_BRANCH" == "main" ]]; then
+            echo "target_branch=dev" >> "$GITHUB_OUTPUT"
+          elif [[ "$CURRENT_BRANCH" == "lab" ]]; then
             echo "target_branch=dev" >> "$GITHUB_OUTPUT"
           elif [[ "$CURRENT_BRANCH" == "dev" ]]; then
             echo "target_branch=test" >> "$GITHUB_OUTPUT"
