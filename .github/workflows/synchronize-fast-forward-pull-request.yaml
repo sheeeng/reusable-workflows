@@ -70,17 +70,17 @@ jobs:
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
           set -x
-          SEARCH_PR_TITLE="Fast-forward version ${LAST_COMMIT_DATE}"
-          if [[ "${CURRENT_BRANCH}" == "lab" ]]; then
-            COUNT=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base ${TARGET_BRANCH} | wc -l)
+          SEARCH_PR_TITLE="Fast-forward version $LAST_COMMIT_DATE"
+          if [[ "$CURRENT_BRANCH" == "lab" ]]; then
+            COUNT=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base $TARGET_BRANCH | wc -l)
             ((COUNT+=1))
-            PULL_REQUEST_TITLE="Fast-forward \`${TARGET_BRANCH}\` to version \`${LAST_COMMIT_DATE}-$COUNT\` 🚀"
+            PR_TITLE="Fast-forward \`$TARGET_BRANCH\` to version \`$LAST_COMMIT_DATE-$COUNT\` 🚀"
           else
-            LAST_PR_TITLE=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base ${CURRENT_BRANCH} \
+            LAST_PR_TITLE=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base $CURRENT_BRANCH \
               --json title -q ".[0].title")
-            PULL_REQUEST_TITLE=$(echo "$LAST_PR_TITLE" | sed "s/${CURRENT_BRANCH}/${TARGET_BRANCH}/")
+            PR_TITLE=$(echo "$LAST_PR_TITLE" | sed "s/$CURRENT_BRANCH/$TARGET_BRANCH/")
           fi
-          echo "pull_request_title=${PULL_REQUEST_TITLE}" >> "${GITHUB_OUTPUT}"
+          echo "pr_title=$PR_TITLE" >> "$GITHUB_OUTPUT"
 
       - name: Fetch Changes
         env:
