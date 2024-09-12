@@ -1,0 +1,140 @@
+name: Synchronize Fast Forward Pull Request
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - lab
+      - dev
+      - test
+  workflow_call:
+    inputs:
+      app_id:
+        required: true
+        type: string
+    secrets:
+      private_key:
+        required: true
+
+# This workflow requires these permissions in the caller workflow.
+# permissions:
+#   contents: read
+#   pull-requests: write
+#   repository-projects: read # https://github.com/cli/cli/discussions/5307
+
+jobs:
+  synchronize-fast-forward-pull-request:
+    name: Synchronize Fast Forward Pull Request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get App Token
+        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        id: app-token
+        with:
+          app-id: ${{ inputs.app_id }}
+          private-key: ${{ secrets.private_key }}
+
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
+
+      - name: Get target branch
+        id: get-target-branch
+        env:
+          CURRENT_BRANCH: ${{ github.ref_name }}
+        run: |
+          if [[ "${CURRENT_BRANCH}" == "main" ]]; then
+            echo "target_branch=lab" >> "$GITHUB_OUTPUT"
+          elif [[ "${CURRENT_BRANCH}" == "lab" ]]; then
+            echo "target_branch=dev" >> "${GITHUB_OUTPUT}"
+          elif [[ "${CURRENT_BRANCH}" == "dev" ]]; then
+            echo "target_branch=test" >> "${GITHUB_OUTPUT}"
+          elif [[ "${CURRENT_BRANCH}" == "test" ]]; then
+            echo "target_branch=prod" >> "${GITHUB_OUTPUT}"
+          else
+            echo "Error: Current branch \`${CURRENT_BRANCH}\` is invalid."
+            exit 1
+          fi
+
+      - name: Get Last Commit Date
+        id: get-last-commit-date
+        run: echo "last_commit_date=$(date -d @$(git log -1 --format="%ct") +'%Y%m%d')" >> "${GITHUB_OUTPUT}"
+
+      - name: Generate Pull Request Title
+        id: generate-pull-request-title
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          LAST_COMMIT_DATE: ${{ steps.get-last-commit-date.outputs.last_commit_date }}
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
+          CURRENT_BRANCH: ${{ github.ref_name }}
+        run: |
+          SEARCH_PR_TITLE="Fast-forward version ${LAST_COMMIT_DATE}"
+          if [[ "${CURRENT_BRANCH}" == "lab" ]]; then
+            COUNT=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base ${TARGET_BRANCH} | wc -l)
+            ((COUNT+=1))
+            PULL_REQUEST_TITLE="Fast-forward \`${TARGET_BRANCH}\` to version \`${LAST_COMMIT_DATE}-$COUNT\` 🚀"
+          else
+            LAST_PR_TITLE=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base ${CURRENT_BRANCH} \
+              --json title -q ".[0].title")
+            PULL_REQUEST_TITLE=$(echo "$LAST_PR_TITLE" | sed "s/${CURRENT_BRANCH}/${TARGET_BRANCH}/")
+          fi
+          echo "pull_request_title=${PULL_REQUEST_TITLE}" >> "${GITHUB_OUTPUT}"
+
+      - name: Fetch Changes
+        env:
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
+        run: git fetch origin ${TARGET_BRANCH}:${TARGET_BRANCH}
+
+      - name: Generate Changelog
+        env:
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
+          CURRENT_BRANCH: ${{ github.ref_name }}
+        run: |
+          echo "🤖 Auto-generated PR to merge changes from \`${CURRENT_BRANCH}\` to \`$TARGET_BRANCH\`.
+
+          ### Changes" > changelog.md
+
+          PRS_AND_ISSUES=$(git log --oneline ${TARGET_BRANCH}..${CURRENT_BRANCH} | grep -Eo '#[0-9]+' | sort | uniq -u)
+          if [[ -n "${PRS_AND_ISSUES}" ]]; then
+            echo '**PRs / Issues:**' >> changelog.md
+            echo "${PRS_AND_ISSUES}" | sed 's/^/- /' >> changelog.md
+            echo >> changelog.md
+          fi
+          COMMITS=$(git log --oneline --no-merges --first-parent ${TARGET_BRANCH}..${CURRENT_BRANCH})
+          if [[ -n "${COMMITS}" ]]; then
+            echo '**Commits:**' >> changelog.md
+            echo "${COMMITS}" | sed 's/^/- /' >> changelog.md
+          fi
+
+      - name: Check Pull Request Exists
+        id: check-pull-request-exists
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          CURRENT_BRANCH: ${{ github.ref_name }}
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
+        run: |
+          EXISTING_PULL_REQUEST_NUMBER=$(gh pr list --base ${TARGET_BRANCH} --head ${CURRENT_BRANCH} --json number --jq ".[0].number")
+          echo "existing_pull_request_number=${EXISTING_PULL_REQUEST_NUMBER}" >> "${GITHUB_OUTPUT}"
+
+      - name: Synchronize Pull Request
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
+          CURRENT_BRANCH: ${{ github.ref_name }}
+          EXISTING_PULL_REQUEST_NUMBER: ${{ steps.check-pull-request-exists.outputs.existing_pull_request_number }}
+          PULL_REQUEST_TITLE: ${{ steps.generate-pull-request-title.outputs.pull_request_title }}
+        run: |
+          if [[ -n "${EXISTING_PULL_REQUEST_NUMBER}" ]]; then
+            # Update the body of existing pull request with the new changelog.
+            gh pr edit ${EXISTING_PULL_REQUEST_NUMBER} \
+              --title "${PULL_REQUEST_TITLE}" \
+              --body-file changelog.md
+          else
+            gh pr create \
+              --head ${CURRENT_BRANCH} \
+              --base $TARGET_BRANCH \
+              --title "${PULL_REQUEST_TITLE}" \
+              --body-file changelog.md \
+              --label fast-forward
+          fi
