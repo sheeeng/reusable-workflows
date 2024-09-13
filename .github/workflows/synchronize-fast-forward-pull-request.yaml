@@ -44,13 +44,13 @@ jobs:
         env:
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
-          if [[ "$CURRENT_BRANCH" == "main" ]]; then
+          if [[ "${CURRENT_BRANCH}" == "main" ]]; then
             echo "target_branch=lab" >> "${GITHUB_OUTPUT}"
-          elif [[ "$CURRENT_BRANCH" == "lab" ]]; then
+          elif [[ "${CURRENT_BRANCH}" == "lab" ]]; then
             echo "target_branch=dev" >> "${GITHUB_OUTPUT}"
-          elif [[ "$CURRENT_BRANCH" == "dev" ]]; then
+          elif [[ "${CURRENT_BRANCH}" == "dev" ]]; then
             echo "target_branch=test" >> "${GITHUB_OUTPUT}"
-          elif [[ "$CURRENT_BRANCH" == "test" ]]; then
+          elif [[ "${CURRENT_BRANCH}" == "test" ]]; then
             echo "target_branch=prod" >> "${GITHUB_OUTPUT}"
           else
             echo "Error: Current branch \`${CURRENT_BRANCH}\` is not supported." >&2
@@ -70,7 +70,7 @@ jobs:
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
           SEARCH_PR_TITLE="Fast-forward version $LAST_COMMIT_DATE"
-          if [[ "$CURRENT_BRANCH" == 'main' ]]; then
+          if [[ "${CURRENT_BRANCH}" == 'main' ]]; then
             COUNT=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base $TARGET_BRANCH | wc -l)
             ((COUNT+=1))
             PR_TITLE="Fast-forward \`$TARGET_BRANCH\` to version \`$LAST_COMMIT_DATE-$COUNT\` 🚀"
