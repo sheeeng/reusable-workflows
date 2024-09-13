@@ -69,17 +69,17 @@ jobs:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
-          SEARCH_PR_TITLE="Fast-forward version $LAST_COMMIT_DATE"
+          PULL_REQUEST_TITLE_PATTERN="Fast-forward version $LAST_COMMIT_DATE"
           if [[ "${CURRENT_BRANCH}" == 'main' ]]; then
-            COUNT=$(gh pr list --search "${SEARCH_PR_TITLE} in:title" --state merged --base ${TARGET_BRANCH} | wc --lines)
+            COUNT=$(gh pr list --search "${PULL_REQUEST_TITLE_PATTERN} in:title" --state merged --base ${TARGET_BRANCH} | wc --lines)
             ((COUNT+=1))
             PR_TITLE="Fast-forward \`${TARGET_BRANCH}\` to version \`${LAST_COMMIT_DATE}-${COUNT}\` 🚀"
           else
-            LAST_PR_TITLE=$(gh pr list --search "${SEARCH_PR_TITLE} in:title" --state merged --base ${CURRENT_BRANCH} \
+            LAST_PULL_REQUEST_TITLE=$(gh pr list --search "${PULL_REQUEST_TITLE_PATTERN} in:title" --state merged --base ${CURRENT_BRANCH} \
               --json title --jq ".[0].title")
-            PR_TITLE=$(echo "${LAST_PR_TITLE}" | sed "s/${CURRENT_BRANCH}/${TARGET_BRANCH}/")
+            PULL_REQUEST_TITLE=$(echo "${LAST_PULL_REQUEST_TITLE}" | sed "s/${CURRENT_BRANCH}/${TARGET_BRANCH}/")
           fi
-          echo "pr_title=${PR_TITLE}" >> "${GITHUB_OUTPUT}"
+          echo "pull_request_title=${PULL_REQUEST_TITLE}" >> "${GITHUB_OUTPUT}"
 
       - name: Fetch Changes
         env:
@@ -123,7 +123,7 @@ jobs:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
           PULL_REQUEST_NUMBER: ${{ steps.get-existing-pull-request.outputs.pull_request_number }}
-          PULL_REQUEST_TITLE: ${{ steps.get-pull-request-title.outputs.pr_title }}
+          PULL_REQUEST_TITLE: ${{ steps.get-pull-request-title.outputs.pull_request_title }}
         run: |
           if [[ -n "${PULL_REQUEST_NUMBER}" ]]; then
             # Update the body of existing pull request with the new changelog.
