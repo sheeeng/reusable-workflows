@@ -59,7 +59,7 @@ jobs:
 
       - name: Get Commit Date
         id: get-commit-date
-        run: echo "last_commit_date=$(date -d @$(git log -1 --format="%ct") +'%Y%m%d')" >> "${GITHUB_OUTPUT}"
+        run: echo "last_commit_date=$(date --date @$(git log -1 --format="%ct") +'%Y%m%d')" >> "${GITHUB_OUTPUT}"
 
       - name: Get Pull Request Title
         id: get-pull-request-title
