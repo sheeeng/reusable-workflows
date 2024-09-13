@@ -69,7 +69,6 @@ jobs:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
-          set -x
           SEARCH_PR_TITLE="Fast-forward version $LAST_COMMIT_DATE"
           if [[ "$CURRENT_BRANCH" == 'main' ]]; then
             COUNT=$(gh pr list --search "$SEARCH_PR_TITLE in:title" --state merged --base $TARGET_BRANCH | wc -l)
@@ -115,7 +114,6 @@ jobs:
           CURRENT_BRANCH: ${{ github.ref_name }}
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
         run: |
-          set -x
           PULL_REQUEST_NUMBER=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number --jq ".[0].number")
           echo "pull_request_number=$PULL_REQUEST_NUMBER" >> "$GITHUB_OUTPUT"
 
@@ -127,7 +125,6 @@ jobs:
           PULL_REQUEST_NUMBER: ${{ steps.get-existing-pull-request.outputs.pull_request_number }}
           PULL_REQUEST_TITLE: ${{ steps.get-pull-request-title.outputs.pr_title }}
         run: |
-          set -x
           if [[ -n "$PULL_REQUEST_NUMBER" ]]; then
             # Update the body of existing pull request with the new changelog.
             gh pr edit $PULL_REQUEST_NUMBER \
