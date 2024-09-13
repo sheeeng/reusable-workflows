@@ -71,12 +71,12 @@ jobs:
         run: |
           SEARCH_PR_TITLE="Fast-forward version $LAST_COMMIT_DATE"
           if [[ "${CURRENT_BRANCH}" == 'main' ]]; then
-            COUNT=$(gh pr list --search "${SEARCH_PR_TITLE} in:title" --state merged --base ${TARGET_BRANCH} | wc -l)
+            COUNT=$(gh pr list --search "${SEARCH_PR_TITLE} in:title" --state merged --base ${TARGET_BRANCH} | wc --lines)
             ((COUNT+=1))
             PR_TITLE="Fast-forward \`${TARGET_BRANCH}\` to version \`${LAST_COMMIT_DATE}-${COUNT}\` 🚀"
           else
             LAST_PR_TITLE=$(gh pr list --search "${SEARCH_PR_TITLE} in:title" --state merged --base ${CURRENT_BRANCH} \
-              --json title -q ".[0].title")
+              --json title --jq ".[0].title")
             PR_TITLE=$(echo "${LAST_PR_TITLE}" | sed "s/${CURRENT_BRANCH}/${TARGET_BRANCH}/")
           fi
           echo "pr_title=${PR_TITLE}" >> "${GITHUB_OUTPUT}"
