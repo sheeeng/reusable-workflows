@@ -45,13 +45,13 @@ jobs:
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
           if [[ "$CURRENT_BRANCH" == "main" ]]; then
-            echo "target_branch=lab" >> "$GITHUB_OUTPUT"
+            echo "target_branch=lab" >> "${GITHUB_OUTPUT}"
           elif [[ "$CURRENT_BRANCH" == "lab" ]]; then
-            echo "target_branch=dev" >> "$GITHUB_OUTPUT"
+            echo "target_branch=dev" >> "${GITHUB_OUTPUT}"
           elif [[ "$CURRENT_BRANCH" == "dev" ]]; then
-            echo "target_branch=test" >> "$GITHUB_OUTPUT"
+            echo "target_branch=test" >> "${GITHUB_OUTPUT}"
           elif [[ "$CURRENT_BRANCH" == "test" ]]; then
-            echo "target_branch=prod" >> "$GITHUB_OUTPUT"
+            echo "target_branch=prod" >> "${GITHUB_OUTPUT}"
           else
             echo "Error: Current branch \`${CURRENT_BRANCH}\` is not supported." >&2
             exit 1
@@ -59,7 +59,7 @@ jobs:
 
       - name: Get Commit Date
         id: get-commit-date
-        run: echo "last_commit_date=$(date -d @$(git log -1 --format="%ct") +'%Y%m%d')" >> "$GITHUB_OUTPUT"
+        run: echo "last_commit_date=$(date -d @$(git log -1 --format="%ct") +'%Y%m%d')" >> "${GITHUB_OUTPUT}"
 
       - name: Get Pull Request Title
         id: get-pull-request-title
@@ -79,7 +79,7 @@ jobs:
               --json title -q ".[0].title")
             PR_TITLE=$(echo "$LAST_PR_TITLE" | sed "s/$CURRENT_BRANCH/$TARGET_BRANCH/")
           fi
-          echo "pr_title=$PR_TITLE" >> "$GITHUB_OUTPUT"
+          echo "pr_title=$PR_TITLE" >> "${GITHUB_OUTPUT}"
 
       - name: Fetch Changes
         env:
@@ -115,7 +115,7 @@ jobs:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
         run: |
           PULL_REQUEST_NUMBER=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number --jq ".[0].number")
-          echo "pull_request_number=$PULL_REQUEST_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "pull_request_number=$PULL_REQUEST_NUMBER" >> "${GITHUB_OUTPUT}"
 
       - name: Synchronize Pull Request
         env:
