@@ -69,7 +69,7 @@ jobs:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
-          PULL_REQUEST_TITLE_PATTERN="Fast-forward version $LAST_COMMIT_DATE"
+          PULL_REQUEST_TITLE_PATTERN="Fast-forward version ${LAST_COMMIT_DATE}"
           if [[ "${CURRENT_BRANCH}" == 'main' ]]; then
             COUNT=$(gh pr list --search "${PULL_REQUEST_TITLE_PATTERN} in:title" --state merged --base ${TARGET_BRANCH} | wc --lines)
             ((COUNT+=1))
@@ -101,7 +101,7 @@ jobs:
             echo "${PRS_AND_ISSUES}" | sed 's/^/- /' >> changelog.md
             echo >> changelog.md
           fi
-          COMMITS=$(git log --oneline --no-merges --first-parent $TARGET_BRANCH..$CURRENT_BRANCH)
+          COMMITS=$(git log --oneline --no-merges --first-parent ${TARGET_BRANCH}..${CURRENT_BRANCH})
           if [[ -n "${COMMITS}" ]]; then
             echo '**Commits:**' >> changelog.md
             echo "${COMMITS}" | sed 's/^/- /' >> changelog.md
@@ -114,7 +114,7 @@ jobs:
           CURRENT_BRANCH: ${{ github.ref_name }}
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
         run: |
-          PULL_REQUEST_NUMBER=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number --jq ".[0].number")
+          PULL_REQUEST_NUMBER=$(gh pr list --base ${TARGET_BRANCH} --head ${CURRENT_BRANCH} --json number --jq ".[0].number")
           echo "pull_request_number=${PULL_REQUEST_NUMBER}" >> "${GITHUB_OUTPUT}"
 
       - name: Synchronize Pull Request
