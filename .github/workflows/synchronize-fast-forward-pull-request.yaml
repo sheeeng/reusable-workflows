@@ -39,7 +39,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get target branch
+      - name: Get Target Branch
         id: get-target-branch
         env:
           CURRENT_BRANCH: ${{ github.ref_name }}
@@ -57,15 +57,15 @@ jobs:
             exit 1
           fi
 
-      - name: Get last commit date
-        id: date
+      - name: Get Commit Date
+        id: get-commit-date
         run: echo "last_commit_date=$(date -d @$(git log -1 --format="%ct") +'%Y%m%d')" >> "$GITHUB_OUTPUT"
 
-      - name: Generate PR title
-        id: generate-pr-title
+      - name: Get Pull Request Title
+        id: get-pull-request-title
         env:
           GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          LAST_COMMIT_DATE: ${{ steps.date.outputs.last_commit_date }}
+          LAST_COMMIT_DATE: ${{ steps.get-commit-date.outputs.last_commit_date }}
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
@@ -87,7 +87,7 @@ jobs:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
         run: git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
 
-      - name: Generate changelog
+      - name: Generate Changelog
         env:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
@@ -125,7 +125,7 @@ jobs:
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
           PR_EXISTING: ${{ steps.check-pr.outputs.PR_EXISTING }}
-          PR_TITLE: ${{ steps.generate-pr-title.outputs.pr_title }}
+          PR_TITLE: ${{ steps.get-pull-request-title.outputs.pr_title }}
         run: |
           set -x
           if [[ -n "$PR_EXISTING" ]]; then
