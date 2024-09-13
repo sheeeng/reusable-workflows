@@ -28,19 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get App Token
-        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1
-        id: app-token
+        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        id: get-app-token
         with:
           app-id: ${{ inputs.app_id }}
           private-key: ${{ secrets.private_key }}
 
       - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
 
       - name: Get target branch
-        id: target-branch
+        id: get-target-branch
         env:
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
@@ -64,9 +64,9 @@ jobs:
       - name: Generate PR title
         id: generate-pr-title
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
           LAST_COMMIT_DATE: ${{ steps.date.outputs.last_commit_date }}
-          TARGET_BRANCH: ${{ steps.target-branch.outputs.target_branch }}
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
           set -x
@@ -84,12 +84,12 @@ jobs:
 
       - name: Fetch Changes
         env:
-          TARGET_BRANCH: ${{ steps.target-branch.outputs.target_branch }}
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
         run: git fetch origin $TARGET_BRANCH:$TARGET_BRANCH
 
       - name: Generate changelog
         env:
-          TARGET_BRANCH: ${{ steps.target-branch.outputs.target_branch }}
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
         run: |
           echo "🤖 Auto-generated PR to merge changes from \`$CURRENT_BRANCH\` to \`$TARGET_BRANCH\`.
@@ -111,9 +111,9 @@ jobs:
       - name: Check if PR already exists
         id: check-pr
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
           CURRENT_BRANCH: ${{ github.ref_name }}
-          TARGET_BRANCH: ${{ steps.target-branch.outputs.target_branch }}
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
         run: |
           set -x
           PR_EXISTING=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number --jq ".[0].number")
@@ -121,8 +121,8 @@ jobs:
 
       - name: Update or Create PR
         env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          TARGET_BRANCH: ${{ steps.target-branch.outputs.target_branch }}
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
           PR_EXISTING: ${{ steps.check-pr.outputs.PR_EXISTING }}
           PR_TITLE: ${{ steps.generate-pr-title.outputs.pr_title }}
