@@ -124,20 +124,20 @@ jobs:
           GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
-          PR_EXISTING: ${{ steps.get-existing-pull-request.outputs.pull_request_number }}
-          PR_TITLE: ${{ steps.get-pull-request-title.outputs.pr_title }}
+          PULL_REQUEST_NUMBER: ${{ steps.get-existing-pull-request.outputs.pull_request_number }}
+          PULL_REQUEST_TITLE: ${{ steps.get-pull-request-title.outputs.pr_title }}
         run: |
           set -x
-          if [[ -n "$PR_EXISTING" ]]; then
-            # Update the existing PR's body with the new changelog
-            gh pr edit $PR_EXISTING \
-              --title "$PR_TITLE" \
+          if [[ -n "$PULL_REQUEST_NUMBER" ]]; then
+            # Update the body of existing pull request with the new changelog.
+            gh pr edit $PULL_REQUEST_NUMBER \
+              --title "$PULL_REQUEST_TITLE" \
               --body-file changelog.md
           else
             gh pr create \
               --head $CURRENT_BRANCH \
               --base $TARGET_BRANCH \
-              --title "$PR_TITLE" \
+              --title "$PULL_REQUEST_TITLE" \
               --body-file changelog.md \
               --label fast-forward
           fi
