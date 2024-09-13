@@ -102,7 +102,7 @@ jobs:
             echo "${PRS_AND_ISSUES}" | sed 's/^/- /' >> changelog.md
             echo >> changelog.md
           fi
-          COMMITS=$(git log --oneline --no-merges --first-parent $TARGET_BRANCH..$CURRENT_BRANCH)
+          COMMITS=$(git log --oneline --no-merges --first-parent ${TARGET_BRANCH}..${CURRENT_BRANCH})
           if [[ -n "${COMMITS}" ]]; then
             echo '**Commits:**' >> changelog.md
             echo "${COMMITS}" | sed 's/^/- /' >> changelog.md
@@ -115,7 +115,7 @@ jobs:
           CURRENT_BRANCH: ${{ github.ref_name }}
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
         run: |
-          PULL_REQUEST_NUMBER=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number --jq ".[0].number")
+          PULL_REQUEST_NUMBER=$(gh pr list --base ${TARGET_BRANCH} --head ${CURRENT_BRANCH} --json number --jq ".[0].number")
           echo "pull_request_number=${PULL_REQUEST_NUMBER}" >> "${GITHUB_OUTPUT}"
 
       - name: Synchronize Pull Request
