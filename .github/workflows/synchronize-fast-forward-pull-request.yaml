@@ -108,23 +108,23 @@ jobs:
             echo "$COMMITS" | sed 's/^/- /' >> changelog.md
           fi
 
-      - name: Check if PR already exists
-        id: check-pr
+      - name: Get Existing Pull Request
+        id: get-existing-pull-request
         env:
           GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
           CURRENT_BRANCH: ${{ github.ref_name }}
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
         run: |
           set -x
-          PR_EXISTING=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number --jq ".[0].number")
-          echo "PR_EXISTING=$PR_EXISTING" >> "$GITHUB_OUTPUT"
+          PULL_REQUEST_NUMBER=$(gh pr list --base $TARGET_BRANCH --head $CURRENT_BRANCH --json number --jq ".[0].number")
+          echo "pull_request_number=$PULL_REQUEST_NUMBER" >> "$GITHUB_OUTPUT"
 
-      - name: Update or Create PR
+      - name: Synchronize Pull Request
         env:
           GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
           TARGET_BRANCH: ${{ steps.get-target-branch.outputs.target_branch }}
           CURRENT_BRANCH: ${{ github.ref_name }}
-          PR_EXISTING: ${{ steps.check-pr.outputs.PR_EXISTING }}
+          PR_EXISTING: ${{ steps.get-existing-pull-request.outputs.pull_request_number }}
           PR_TITLE: ${{ steps.get-pull-request-title.outputs.pr_title }}
         run: |
           set -x
